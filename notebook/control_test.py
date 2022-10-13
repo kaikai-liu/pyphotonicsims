@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from control_core.control_systems import *
-plt.style.use('notebook')
+plt.style.use('')
 
 s = ct.tf('s')
 sys = 10e6/(1 + s/(2*np.pi*1e5))
