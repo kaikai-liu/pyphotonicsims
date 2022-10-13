@@ -177,15 +177,15 @@ def feedback_combine(C_list, output=0):
     # feedback system transfer function sys_ref = C1C2C3/(1+C1C2C3C4C5C6)
     Cobj_fb.sys_ref = sys_parts[-1] / (1 + sys_parts[-2])
     for ii in range(len(C_list)):
-        Cobj_fb.sub_sys.append(Cobj_fb.sys_ref * sys_parts[ii])
+        Cobj_fb.block_sys.append(Cobj_fb.sys_ref * sys_parts[ii])
 
     # feedback system noise spectrum calculation
     for ii in range(len(C_list)):
-        mag, phase, omg = freqresp(Cobj_fb.sub_sys[ii], Cobj_fb.omgx)
+        mag, phase, omg = freqresp(Cobj_fb.block_sys[ii], Cobj_fb.omgx)
         mag = mag.reshape(Cobj_fb.freq_points)
-        Cobj_fb.sub_noise.append(mag ** 2 * C_list[ii].output_noise)
+        Cobj_fb.block_output_noise_transferred.append(mag ** 2 * C_list[ii].output_noise)
         Cobj_fb.output_noise = Cobj_fb.output_noise + mag ** 2 * C_list[ii].output_noise
-        Cobj_fb.sub_labels.append(C_list[ii].label)
+        Cobj_fb.block_labels.append(C_list[ii].label)
 
     return Cobj_fb
 

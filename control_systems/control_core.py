@@ -92,9 +92,11 @@ class ControlModule(ControlBlock):
         # inherit all properties from ControlBlock
         super().__init__(freq1,freq2,freq_points,sys_ref,unit_in,unit_out,label)
         # add module properties such as noise spectra arrays
-        self.sub_sys = []
-        self.sub_noise = []
-        self.sub_labels = []
+        self.block_sys = []
+        self.block_output_noise_transferred = []
+        self.block_output_noise = []
+        self.block_labels = []
+        self.open_loop_noise = np.zeros(freq_points)
 
     def freqresp_module_update(self):
         mag, phase, omg = freqresp(self.sys_ref, self.omgx)
@@ -103,28 +105,28 @@ class ControlModule(ControlBlock):
 
         self.magx_sub_sys = []
         self.phasex_sub_sys = []
-        for ii in range(len(self.sub_sys)):
-            sys_ii = self.sub_sys[ii]
+        for ii in range(len(self.block_sys)):
+            sys_ii = self.block_sys[ii]
             mag, phase, omg = freqresp(sys_ii, self.omgx)
             mag = mag.reshape(self.freq_points)
             phase = phase.reshape(self.freq_points)
             self.magx_sub_sys.append(mag)
             self.phasex_sub_sys.append(phase)
 
-    def plot_subnoise(self):
+    def plot_subnoise_transfer(self):
         """
-        plot noise spectrum from each sub-module
+        plot noise transfer function from each sub-module
 
         """
 
         legends = []
-        for ii in range(len(self.sub_sys)):
-            legends.append(self.sub_labels[ii]+' S'+str(ii+1)+'->S')
+        for ii in range(len(self.block_sys)):
+            legends.append(self.block_labels[ii] + ' S' + str(ii + 1) + '->S')
         legends = tuple(legends)
 
-        mag = self.sub_sys
+        mag = self.block_sys
         plt.figure()
-        for ii in range(len(self.sub_sys)):
+        for ii in range(len(self.block_sys)):
             plt.loglog(self.freqx, mag[ii])
         plt.xlabel('Frequency (Hz)')
         plt.ylabel('Magnitude')
@@ -132,19 +134,37 @@ class ControlModule(ControlBlock):
         plt.legend(legends)
 
     def plot_module_noise(self):
-        # plot reference tracking noise and output noise
-        self.plot_block_noise()
+        """
+        Plot module noise, including plant noise, transferred plant noise, reference tracking noise, total noise
+
+        """
+        open_loop_noise = self.open_loop_noise
+        ref_noise = self.magx_sys_ref**2*self.input_noise
+        total_noise = ref_noise + self.output_noise
+        plt.figure()
+        plt.loglog(self.freqx, open_loop_noise, self.freqx, ref_noise, self.freqx, self.output_noise, self.freqx, total_noise)
+        plt.xlabel('Frequency (Hz)')
+        plt.ylabel('Noise spectrum (' + self.unit_out + '$^2$/Hz)')
+        plt.legend(('Open loop output noise','Reference noise', 'Close loop output Noise', 'Total'))
+        plt.title('System spectrum')
+
+    def plot_module_noise_decomposition(self):
+        """
+        plot transferred noise contribution from all blocks
+
+        """
 
         # plot noise contribution from individual blocks
         legends = []
-        for ii in range(len(self.sub_sys)):
-            legends.append(self.sub_labels[ii]+' S'+str(ii+1)+'->S')
+        for ii in range(len(self.block_sys)):
+            legends.append(self.block_labels[ii] + ' S' + str(ii + 1) + '->S')
         legends.append('Total output noise')
         legends = tuple(legends)
 
+
         plt.figure()
-        for ii in range(len(self.sub_sys)):
-            plt.loglog(self.freqx, self.sub_noise[ii])
+        for ii in range(len(self.block_sys)):
+            plt.loglog(self.freqx, self.block_output_noise_transferred[ii])
         plt.loglog(self.freqx, self.output_noise)
         plt.xlabel('Frequency (Hz)')
         plt.ylabel('Noise spectrum (' + self.unit_out + '$^2$/Hz)')
@@ -170,6 +190,8 @@ def feedback_combine(C_list, output=0):
     Cobj_fb.unit_out = C_list[output].unit_out
     Cobj_fb.freqx = C_list[0].freqx
     Cobj_fb.omgx = C_list[0].omgx
+    Cobj_fb.open_loop_noise = C_list[output].output_noise
+
 
     sys_list = []
     for Cii in C_list:
@@ -200,15 +222,16 @@ def feedback_combine(C_list, output=0):
     # feedback system transfer function sys_ref = C1C2C3/(1+C1C2C3C4C5C6)
     Cobj_fb.sys_ref = sys_parts[-1] / (1 + sys_parts[-2])
     for ii in range(len(C_list)):
-        Cobj_fb.sub_sys.append(Cobj_fb.sys_ref * sys_parts[ii])
+        Cobj_fb.block_sys.append(Cobj_fb.sys_ref * sys_parts[ii])
 
     # feedback system noise spectrum calculation
     for ii in range(len(C_list)):
-        mag, phase, omg = freqresp(Cobj_fb.sub_sys[ii], Cobj_fb.omgx)
+        mag, phase, omg = freqresp(Cobj_fb.block_sys[ii], Cobj_fb.omgx)
         mag = mag.reshape(Cobj_fb.freq_points)
-        Cobj_fb.sub_noise.append(mag ** 2 * C_list[ii].output_noise)
+        Cobj_fb.block_output_noise_transferred.append(mag ** 2 * C_list[ii].output_noise)
         Cobj_fb.output_noise = Cobj_fb.output_noise + mag ** 2 * C_list[ii].output_noise
-        Cobj_fb.sub_labels.append(C_list[ii].label)
+        Cobj_fb.block_output_noise.append(C_list[ii].output_noise)
+        Cobj_fb.block_labels.append(C_list[ii].label)
 
     return Cobj_fb
 

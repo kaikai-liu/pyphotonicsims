@@ -2,8 +2,9 @@ import control as ct
 import numpy as np
 import matplotlib.pyplot as plt
 
-from control_core.control_systems import *
-plt.style.use('')
+from control_systems.control_core import *
+from control_systems.calculate_laser_noise import *
+plt.style.use('notebook')
 
 s = ct.tf('s')
 sys = 10e6/(1 + s/(2*np.pi*1e5))
