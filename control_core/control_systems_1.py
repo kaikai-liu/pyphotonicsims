@@ -9,7 +9,7 @@ class ControlModule:
     reference signal -> D -> C -> P -> output.
     """
 
-    def __init__(self, freq1 = 1, freq2 = 1e7, freq_points = 500, sys_ref = None, unit_in = 'V', unit_out = 'V'):
+    def __init__(self, freq1 = 1, freq2 = 1e7, freq_points = 500, sys_ref = None, unit_in = 'V', unit_out = 'V', label = 'plant'):
         # basic parameters for a general control module
         freq1 = np.log10(freq1)
         freq2 = np.log10(freq2)
@@ -23,6 +23,7 @@ class ControlModule:
         self.output_noise = np.zeros(freq_points)  # V^2/Hz
         self.sub_noise = [] # V^2/Hz
         self.ref_input_noise = np.zeros(freq_points)  # V^2/Hz
+        self.label = label
 
     def freqresp_update(self):
         mag, phase, omg = freqresp(self.sys_ref, self.omgx)
