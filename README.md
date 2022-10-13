@@ -11,7 +11,10 @@ This plot demonstrates (1) the locking bandwidth is about 1 MHz, (2) within the 
 the laser tracks the optical cavity and thus the laser noise is limited by the cavity's
 thermorefreactive noise (TRN), (3) the in-loop noise has contribution from free-running laser
 noise and the photodetector (PD) noise.
-![pdh lock](/notebook/laser_pdh_lock.png)
+
+<img src="notebook/laser_pdh_lock.png" width="300"/>
+
 Below takes a closer look at the in-loop noise contribution from all blocks of the lock loop, such as
 the photodetector (PD) or frequency noise discriminator, the servo and the laser.
-![pdh lock](/notebook/laser_pdh_lock_inloop.png)
+
+<img src="notebook/laser_pdh_lock_inloop.png" width="300"/>
