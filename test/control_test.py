@@ -1,9 +1,7 @@
 import control as ct
-import numpy as np
-import matplotlib.pyplot as plt
 
-from control_systems.control_core import *
-from control_systems.calculate_laser_noise import *
+from photonics_sims.control_systems.control_core import *
+
 plt.style.use('notebook')
 
 s = ct.tf('s')
