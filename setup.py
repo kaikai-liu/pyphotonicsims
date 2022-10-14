@@ -10,10 +10,10 @@ def get_install_requires():
 
 
 setup(
-    name='pyCtrlLoopNoise',
+    name='pyphotonicsims',
     version='0.0.1',
-    url='url="https://github.com/kaikai-liu/pyCtrlLoopNoise',
-    license='',
+    url='url="https://github.com/kaikai-liu/pyPhotonicsSims',
+    license='MIT',
     author='Kaikai Liu',
     author_email='kaikailiu@ucsb.edu',
     description='Photonics simulation tools',

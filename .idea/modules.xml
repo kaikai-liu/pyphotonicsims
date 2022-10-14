@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/pyCtrlLoopNoise.iml" filepath="$PROJECT_DIR$/.idea/pyCtrlLoopNoise.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/pyPhotonicSims.iml" filepath="$PROJECT_DIR$/.idea/pyPhotonicSims.iml" />
     </modules>
   </component>
 </project>

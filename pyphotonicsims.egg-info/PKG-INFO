@@ -1,3 +1,15 @@
+Metadata-Version: 2.1
+Name: pyphotonicsims
+Version: 0.0.1
+Summary: Photonics simulation tools
+Home-page: url="https://github.com/kaikai-liu/pyPhotonicsSims
+Author: Kaikai Liu
+Author-email: kaikailiu@ucsb.edu
+License: MIT
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
 # pyCtrlLoopNoise
 Python simulation and analysis tool for control loop response and noise performances,
 such as Pound-Drever-Hall (PDH), phase lock loop (PLL) and optical phase loop (OPLL).
