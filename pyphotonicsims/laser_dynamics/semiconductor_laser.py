@@ -6,8 +6,8 @@ Data source:
  - in-plane AlGaAs laser: diode laser and integrated circuits, TABLE 5.1
  - VSCEL laser AlGaAs laser: diode laser and integrated circuits, TABLE 5.1
 """
-
-from numpy import *
+import matplotlib.pyplot as plt
+import numpy as np
 from scipy.optimize import fsolve
 from scipy.integrate import solve_ivp
 
@@ -64,7 +64,7 @@ class LaserModel(LaserConst):
         self.a_in_a = 5  # active internal loss, in cm^-1
         self.a_in_p = 0.01 / 4.34  # extended SiN waveguide loss, in cm^-1
         self.a_in = (self.a_in_a * self.La + self.a_in_p * self.Lp) / (self.La + self.Lp)
-        self.a_m = 1 / (self.La + self.Lp) * log(1 / 0.32)  # mirror loss, in cm^-1
+        self.a_m = 1 / (self.La + self.Lp) * np.log(1 / 0.32)  # mirror loss, in cm^-1
 
         # current parameters
         self.eta_i = 0.8  # current efficiency
@@ -102,7 +102,7 @@ class LaserModel(LaserConst):
         self.a_in_a = 20  # active internal loss, in cm^-1
         self.a_in_p = 20  # passive loss, in cm^-1
         self.a_in = (self.a_in_a * self.La + self.a_in_p * self.Lp) / (self.La + self.Lp)
-        self.a_m = 1 / (self.La + self.Lp) * log(1 / 0.995)  # mirror loss, in cm^-1
+        self.a_m = 1 / (self.La + self.Lp) * np.log(1 / 0.995)  # mirror loss, in cm^-1
 
         # current parameters
         self.eta_i = 0.8  # current efficiency
@@ -129,7 +129,7 @@ class LaserModel(LaserConst):
         self.r_ex = self.r_m  # cavity coupling loss rate, in Hz
         # self.r_ex = 3*self.r_in            # cavity coupling loss rate, in Hz
         self.t_p = 1 / (self.r_in + self.r_ex)  # photon lifetime, in s
-        self.Q = 2 * pi * self.f0 / (self.r_in + self.r_ex)
+        self.Q = 2 * np.pi * self.f0 / (self.r_in + self.r_ex)
         self.g_th = (self.r_in + self.r_ex) / (self.Gamma * self.ccm / self.ng_a)  # threshold gain
         sol = fsolve(self.gain_model, [3e18], args=(0, self.g_th, True))
         self.N_th = sol[0]
@@ -139,10 +139,10 @@ class LaserModel(LaserConst):
         # report and print
         print('-----------------REPORT------------------')
         print('Cavity Q:      %.1e' % self.Q)
-        print('Active loss:   %.1f MHz' % (self.r_in_a / (2 * pi * 1e6)))
-        print('Passive loss:  %.1f MHz' % (self.r_in_p / (2 * pi * 1e6)))
-        print('Cavity loss:   %.1f MHz' % (self.r_in / (2 * pi * 1e6)))
-        print('Mirror loss:   %.1f MHz' % (self.r_m / (2 * pi * 1e6)))
+        print('Active loss:   %.1f MHz' % (self.r_in_a / (2 * np.pi * 1e6)))
+        print('Passive loss:  %.1f MHz' % (self.r_in_p / (2 * np.pi * 1e6)))
+        print('Cavity loss:   %.1f MHz' % (self.r_in / (2 * np.pi * 1e6)))
+        print('Mirror loss:   %.1f MHz' % (self.r_m / (2 * np.pi * 1e6)))
         print('g_th:          %.1f cm^(-1)' % self.g_th)
         print('N_th:          %.2fe18 cm^(-3)' % (self.N_th * 1e-18))
         print('I_th:          %.1f mA' % (self.I_th * 1e3))
@@ -159,47 +159,77 @@ class LaserModel(LaserConst):
 
         """
         if find_N_th:
-            g = self.g0 / (1 + self.eps * Np) * (log(Ne + self.N_s) - log(self.N_tr + self.N_s)) - g_th
+            g = self.g0 / (1 + self.eps * Np) * (np.log(Ne + self.N_s) - np.log(self.N_tr + self.N_s)) - g_th
         else:
-            g = self.g0 / (1 + self.eps * Np) * (log(Ne + self.N_s) - log(self.N_tr + self.N_s))
+            g = self.g0 / (1 + self.eps * Np) * (np.log(Ne + self.N_s) - np.log(self.N_tr + self.N_s))
         return g
 
     def PI_current_sweep(self, Ix, tspan):
         """
 
         Args:
-            Ix:
-            tspan:
+            Ix: current sweep points, list, in A
+            tspan: time span for ode, [0,tmax]
 
         Returns:
+            Pout: laser output power, (n,) 1-D array, in W
+            vST: ST linewidth, (n,) 1-D array, in Hz
+            Nx: [carrier density, photon density], (n,2) 2-D array in cm^-3
+            t: time seq array solved in ode45, 1-D array
+            Nt: [carrier density, photon density], (n,2) 2-D array in cm^-3
 
         """
 
         rtol = 1e-4
-        Nx = zeros((len(Ix), 2))
+        Nx = np.zeros((2,len(Ix)))
         for ii in range(len(Ix)):
             if ii == 0:
                 N_init = [1e18, 1e13]
             else:
-                N_init = Nx[ii - 1, :]
+                N_init = Nx[:,ii-1].tolist()
 
             # ode45 integration
             sol = solve_ivp(req_semi_laser, tspan, N_init, args=(Ix[ii], self), rtol=rtol)
             t_sol = sol['t']
             y_sol = sol['y']
-            Nx[ii, :] = [y_sol[0, -1], y_sol[1, -1]]
+            Nx[:,ii] = y_sol[:,-1]
 
             if ii == 0:
                 t = t_sol
-                N = y_sol
+                Nt = y_sol
             else:
-                t = hstack((t, t_sol + t[-1]))
-                N = hstack((N, y_sol))
+                t = np.hstack((t, t_sol + t[-1]))
+                Nt = np.hstack((Nt, y_sol))
 
-        Pout = self.h * self.f0 * Nx[:, 1] * self.Veff * self.r_ex
-        vST = self.nsp * (1 + 5 ** 2) * (self.r_in + self.r_ex) / (4 * pi * Nx[:, 1] * self.Veff)
+        Pout = self.h * self.f0 * Nx[1,:] * self.Veff * self.r_ex
+        vST = self.nsp * (1 + 5 ** 2) * (self.r_in + self.r_ex) / (4 * np.pi * Nx[1,:] * self.Veff)
 
-        return Pout, vST, Nx, t, N
+        return Pout, vST, Nx, t, Nt
+
+    def PI_visulization(self,Ix,tspan = [0,1e-8], plotindensity = True):
+
+        Pout, vST, Nx, t, Nt = self.PI_current_sweep(Ix,tspan)
+
+        plt.figure(figsize= (8,7))
+        plt.subplot(221)
+        plt.plot(Ix*1e3,Nx[0,:],'.') if plotindensity else plt.plot(Ix*1e3,Nx[0,:]*self.V,'.')
+        plt.xlabel('Current (mA)')
+        plt.ylabel('Carrier density (cm^-3)') if plotindensity else plt.ylabel('Carrier number')
+        plt.title('I_th = ' + '%.2f' % (self.I_th*1e3) + ' mA')
+        plt.subplot(222)
+        plt.plot(Ix*1e3,Pout*1e3,'.')
+        plt.xlabel('Current (mA)')
+        plt.ylabel('Output power (mW)')
+        plt.title('I_th = ' + '%.2f' % (self.I_th*1e3) + ' mA')
+        plt.subplot(223)
+        plt.plot(Ix*1e3,Nx[1,:],'.') if plotindensity else plt.plot(Ix*1e3,Nx[1,:]*self.Veff,'.')
+        plt.xlabel('Current (mA)')
+        plt.ylabel('Photon density (cm^-3)') if plotindensity else plt.ylabel('Photon number')
+        plt.subplot(224)
+        plt.semilogy(Ix*1e3,vST,'.')
+        plt.xlabel('Current (mA)')
+        plt.ylabel('ST linewidth (Hz)')
+
 
 
 def req_semi_laser(t, N, current, laser):
