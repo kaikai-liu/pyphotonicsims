@@ -40,6 +40,8 @@ class LaserModel(LaserConst):
             self.define_vscel()
         elif lasertype == 'ecl':
             self.define_ecl()
+        elif lasertype == 'hybrid':
+            self.define_hybrid_ecl()
 
         self.threshold_calc()
 
@@ -64,6 +66,8 @@ class LaserModel(LaserConst):
         self.N_th = sol[0]
         self.I_th = self.q * self.V / self.eta_i * \
                     (self.A * self.N_th + self.B * self.N_th ** 2 + self.C * self.N_th ** 3)  # threshold current
+        self.Ns_2Ith = self.eta_i*(2*self.I_th - self.I_th)/(self.q*self.v_g_a*self.g_th*self.V)
+        self.vST_2Ith = self.nsp*(1+5**2)*(self.r_in + self.r_ex)/(4*np.pi*self.Ns_2Ith*self.Veff) # ST linewidth at 2 I_th
 
         # report and print
         print('-----------------REPORT------------------')
@@ -77,6 +81,7 @@ class LaserModel(LaserConst):
         print('I_th:          %.1f mA' % (self.I_th * 1e3))
         print('eta_d:         %.1f %%' % (self.eta_d * 100))
         print('eta:           %.1f %%' % (self.eta_total * 100))
+        print('ST linewidth:  %.1e Hz' % self.vST_2Ith)
 
     def gain_model(self, Ne, Np, g_th=1600, find_N_th=False):
         """
@@ -179,6 +184,7 @@ class LaserModel(LaserConst):
         plt.plot(Ix * 1e3,'.')
         plt.xlabel('Current point')
         plt.ylabel('Current (mA)')
+
     def freqresp_current_mod(self,I_drive,freq1 = 1e3,freq2 = 1e10,freq_points = 1000):
         tspan = [0, self.tspanmax]
         Pout, vST, Nx, t, Nt = self.PI_current_sweep([I_drive], tspan)
@@ -199,7 +205,6 @@ class LaserModel(LaserConst):
 
         return n1,s1,p1,H,freqx
 
-
     def differentiate_req(self, N, current, dx = 1e-4):
         """
         rate equations
@@ -216,7 +221,6 @@ class LaserModel(LaserConst):
         dfdS = (np.array(req_semi_laser(0, [Ne,Ns*(1+dx)], current, self)) - np.array(req_semi_laser(0, [Ne,Ns], current, self)))/(Ns*dx)
         dfdNS = np.vstack((dfdN,dfdS))
         return dfdNS
-
 
     def define_inplane(self):
         """
@@ -336,6 +340,46 @@ class LaserModel(LaserConst):
         self.N_s = -0.4e18  # in cm ^ -3
         self.eps = 1.5e-17  # in cm ^ 3
 
+    def define_hybrid_ecl(self):
+        """
+        Fan, Youwen, et al. "Hybrid integrated InP-Si 3 N 4 diode laser
+        with a 40-Hz intrinsic linewidth." Optics express 28.15 (2020): 21713-21728.
+
+        """
+        # basic parameters
+        self.tspanmax = 2e-7  # ode45 similaion time span
+        self.beta_sp = 8.7e-5  # spontaneous emission factor
+        self.d = 80e-8  # in cm
+        self.w = 2e-4  # in cm
+        self.La = 0.1  # in cm
+        self.V = 30*self.d * self.w * self.La
+        self.Veff_a = 1.25e-10
+        self.Lp = 50.0          # cavity extension in cm
+        self.Veff_p = self.Lp * 2e-8
+        self.Veff = self.Veff_a + self.Veff_p
+        self.Gamma = self.V / self.Veff
+        self.ng_a = 3.6  # active region group index
+        self.ng_p = 1.6  # passive region group index
+        self.v_g_a = self.ccm / self.ng_a
+
+        # loss parameters
+        self.a_in_a = 15  # active internal loss, in cm^-1
+        self.a_in_p = 0.3 / 4.34  # extended SiN waveguide loss, in cm^-1
+        self.a_in = (self.a_in_a * self.La + self.a_in_p * self.Lp) / (self.La + self.Lp)
+        self.a_m = 1 / (self.La + self.Lp) * np.log(1 / 0.32)  # mirror loss, in cm^-1
+        self.a_m = self.a_in*2
+
+        # current parameters
+        self.eta_i = 0.8  # current efficiency
+        self.A = 0.0  # in 1 / s
+        self.B = 0.8e-10  # in cm^3 / s
+        self.C = 3.5e-30  # in cm^6 / s
+
+        # gain model parameters
+        self.g0 = 1800  # in cm ^ -1
+        self.N_tr = 1.8e18  # in cm ^ -3
+        self.N_s = -0.4e18  # in cm ^ -3
+        self.eps = 1.5e-17  # in cm ^ 3
 
 def req_semi_laser(t, N, current, laser):
     """
