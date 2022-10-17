@@ -1,7 +1,6 @@
-# pyCtrlLoopNoise
-Python simulation and analysis tool for integrated photonic components and circuits, including:
- - Control loops, Pound-Drever-Hall (PDH), phase lock loop (PLL) and optical phase loop (OPLL)
- - Semiconductor laser rate equations based on **The Book** _Diode Laser and Integrated Photonic Circuits_
+# pyphotonicsims
+Python simulation and analysis tool for control loop response and noise performances,
+such as Pound-Drever-Hall (PDH), phase lock loop (PLL) and optical phase loop (OPLL).
 
 ## Installation instructions: 
 
