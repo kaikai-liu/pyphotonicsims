@@ -1,6 +1,7 @@
 # pyphotonicsims
-Python simulation and analysis tool for control loop response and noise performances,
-such as Pound-Drever-Hall (PDH), phase lock loop (PLL) and optical phase loop (OPLL).
+Python simulation and analysis tool for photonic integrated circutis and components, including:
+ - Feedback control loop, Pound-Drever-Hall (PDH), phase lock loop (PLL) and optical phase loop (OPLL)
+ - Semiconductor laser rate equation model, based on **The Book** _Diode Laser and Photonic Integrated Circuits_
 
 ## Installation instructions: 
 
