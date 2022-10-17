@@ -8,7 +8,7 @@ test:
 	pytest
 
 cov:
-	pytest --cov= pyLaserNoise
+	pytest --cov= pyphotonicsims
 
 mypy:
 	mypy . --ignore-missing-imports
@@ -17,13 +17,13 @@ lint:
 	flake8 
 
 pylint:
-	pylint pyLaserNoise
+	pylint pyphotonicsims
 
 lintd2:
 	flake8 --select RST
 
 lintd:
-	pydocstyle pyLaserNoise
+	pydocstyle pyphotonicsims
 
 doc8:
 	doc8 docs/

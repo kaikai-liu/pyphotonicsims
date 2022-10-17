@@ -6,6 +6,7 @@ Data source:
  - in-plane AlGaAs laser: diode laser and integrated circuits, TABLE 5.1
  - VSCEL laser AlGaAs laser: diode laser and integrated circuits, TABLE 5.1
 """
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import fsolve

@@ -11,4 +11,5 @@ pyphotonicsims/control_systems/__init__.py
 pyphotonicsims/control_systems/calculate_laser_noise.py
 pyphotonicsims/control_systems/control_core.py
 pyphotonicsims/laser_dynamics/__init__.py
-pyphotonicsims/laser_dynamics/rate_equation_core.py
+pyphotonicsims/laser_dynamics/brillouin_laser.py
+pyphotonicsims/laser_dynamics/semiconductor_laser.py
