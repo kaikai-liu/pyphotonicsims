@@ -46,18 +46,18 @@ class LaserModel(LaserConst):
 
         self.threshold_calc()
 
-    def threshold_calc(self):
+    def threshold_calc(self,ifprint = True,optimal_a_m = True):
         """
         calculate values such as threshold density, current threshold and so on
 
         """
+
         self.r_in_a = self.ccm * (self.a_in_a * self.La / self.ng_a) / (self.La + self.Lp)
         self.r_in_p = self.ccm * (self.a_in_p * self.Lp / self.ng_p) / (self.La + self.Lp)
         self.r_in = self.r_in_a + self.r_in_p  # cavity intrinsic loss rate, in Hz
         self.r_m = self.ccm * self.a_m * (self.La / self.ng_a + self.Lp / self.ng_p) \
                    / (self.La + self.Lp)  # cavity mirror loss rate, in Hz
-        self.r_ex = self.r_m  # cavity coupling loss rate, in Hz
-        # self.r_ex = 3*self.r_in            # cavity coupling loss rate, in Hz
+        self.r_ex = 2*self.r_in if optimal_a_m else self.r_m  # cavity coupling loss rate, in Hz
         self.eta_d = self.r_ex/(self.r_in + self.r_ex) # diff efficiency
         self.eta_total = self.eta_i*self.eta_d         # total efficiency
         self.t_p = 1 / (self.r_in + self.r_ex)  # photon lifetime, in s
@@ -70,19 +70,21 @@ class LaserModel(LaserConst):
         self.Ns_2Ith = self.eta_i*(2*self.I_th - self.I_th)/(self.q*self.v_g_a*self.g_th*self.V)
         self.vST_2Ith = self.nsp*(1+5**2)*(self.r_in + self.r_ex)/(4*np.pi*self.Ns_2Ith*self.Veff) # ST linewidth at 2 I_th
 
+
         # report and print
-        print('-----------------REPORT------------------')
-        print('Cavity Q:      %.1e' % self.Q)
-        print('Active loss:   %.1f MHz' % (self.r_in_a / (2 * np.pi * 1e6)))
-        print('Passive loss:  %.1f MHz' % (self.r_in_p / (2 * np.pi * 1e6)))
-        print('Cavity loss:   %.1f MHz' % (self.r_in / (2 * np.pi * 1e6)))
-        print('Mirror loss:   %.1f MHz' % (self.r_m / (2 * np.pi * 1e6)))
-        print('g_th:          %.1f cm^(-1)' % self.g_th)
-        print('N_th:          %.2fe18 cm^(-3)' % (self.N_th * 1e-18))
-        print('I_th:          %.1f mA' % (self.I_th * 1e3))
-        print('eta_d:         %.1f %%' % (self.eta_d * 100))
-        print('eta:           %.1f %%' % (self.eta_total * 100))
-        print('ST linewidth:  %.1e Hz' % self.vST_2Ith)
+        if ifprint:
+            print('-----------------REPORT------------------')
+            print('Cavity Q:      %.1e' % self.Q)
+            print('Active loss:   %.1f MHz' % (self.r_in_a / (2 * np.pi * 1e6)))
+            print('Passive loss:  %.1f MHz' % (self.r_in_p / (2 * np.pi * 1e6)))
+            print('Cavity loss:   %.1f MHz' % (self.r_in / (2 * np.pi * 1e6)))
+            print('Mirror loss:   %.1f MHz' % (self.r_ex / (2 * np.pi * 1e6)))
+            print('g_th:          %.1f cm^(-1)' % self.g_th)
+            print('N_th:          %.2fe18 cm^(-3)' % (self.N_th * 1e-18))
+            print('I_th:          %.1f mA' % (self.I_th * 1e3))
+            print('eta_d:         %.1f %%' % (self.eta_d * 100))
+            print('eta:           %.1f %%' % (self.eta_total * 100))
+            print('ST linewidth:  %.1e Hz' % self.vST_2Ith)
 
     def gain_model(self, Ne, Np, g_th=1600, find_N_th=False):
         """
