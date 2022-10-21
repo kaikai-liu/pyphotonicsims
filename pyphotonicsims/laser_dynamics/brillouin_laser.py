@@ -214,7 +214,7 @@ class SBSLaser(LaserConst):
         plt.subplot(224)
         # plt.plot(Px * 1e3, vST.T)
         plt.xlabel('Pump (mW)')
-        plt.ylabel(r'\nu_{ST}' + ' (Hz)')
+        plt.ylabel(r'$\nu_{ST}$' + ' (Hz)')
         #plt.legend(tuple(legends[1:-2]))
 
     def detuning_sweep_visulization(self, dfx, P, abs_heating = [1.0, 0.05]):
@@ -302,7 +302,7 @@ class SBSLaser(LaserConst):
         plt.legend(('SBS shift', 'mFSRx'))
         plt.title(r'$n_g$' + ' %.5f, ' % ng + r'$\Omega_B$' + '@1550nm %.4f GHz' % (OmgBx[0]*1e-9))
 
-        plt.figure(figsize = (7, 4))
+        plt.figure(figsize = (8, 3))
         plt.subplot(121)
         plt.plot(wlx * 1e9, GBx.T)
         plt.xlabel(r'$\lambda$' + ' (nm)')
