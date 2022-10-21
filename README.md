@@ -26,15 +26,18 @@ $$P_{th} = \frac{h\nu\gamma^3}{8\mu\gamma_{ex}} $$
 $$\eta_{S1} = (\frac{\gamma_{ex}}{\gamma})^2$$
 $$\nu_{ST,min} = \frac{n_0\gamma}{2\pi}$$
 
+<p align="center">
 <img src="notebook/figures/sbs_laser_pump_sweep.png" width="600"/>
-
+</p>
 
 ## 2. Control loop noise model
+<p align="center">
 <img src="notebook/figures/control_model_1.png" width="400"/>
 
 <img src="notebook/figures/control_model_2.png" width="400"/>
 
 <img src="notebook/figures/control_model_3.png" width="400"/>
+</p>
 
 #### Example 1: laser PDH lock 
 The left plot shows the frequency noise performance in a laser stabilization setup, where 
@@ -48,11 +51,14 @@ noise and the photodetector (PD) noise.
  - The right-side plot takes a closer look at the in-loop noise contribution from all blocks of the lock loop, such as
 the photodetector (PD) or frequency noise discriminator, the servo and the laser.
 
+<p align="center">
 <img src="notebook/figures/laser_pdh_lock.png" width="300"/> <img src="notebook/figures/laser_pdh_lock_inloop.png" width="300"/>
+</p>
 
 #### Example 2: Phase lock loop 
 The plot below shows the phase noise performance of a Mini-Circuit ZOS50+ VCO locked to an LO.
 
+<p align="center">
 <img src="notebook/figures/VCO_PLL_lock.png" width="300"/>
-
+</p>
 
