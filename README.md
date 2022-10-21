@@ -11,16 +11,33 @@ cd pyphotonicsims
 make install
 ```
 
-## Control loop noise model
+## 1. Stimulated Brillouin scattering (SBS) laser model
+The laser simulation model is based on this paper, 
+Behunin, Ryan O., et al. "Fundamental noise dynamics in cascaded-order Brillouin lasers." 
+Physical Review A 98.2 (2018): 023832.
+
+- Laser rate equations for SBS cascaded emission
+$$
+\frac{da_m}{dt} = (i\Delta\omega - \gamma/2 + \mu(|a_{m-1}|^2 - |a_{m+1}|^2))a_m + \delta_{m0}i\sqrt(\gamma_{ex})F
+$$
+ - Laser metrics calculation: cavity Q, threshold $P_{th}$, efficiency $\eta$, minimum ST linewidth $\nu_{ST}$
+$$P_{th} = \frac{h\nu\gamma^3}{8\mu\gamma_{ex}} $$
+$$\eta_{S1} = (\frac{\gamma_{ex}}{\gamma})^2$$
+$$\nu_{ST,min} = \frac{n_0\gamma}{2\pi}$$
+
+<img src="notebook/figures/sbs_laser_pump_sweep.png" width="600"/>
+
+
+## 2. Control loop noise model
 <img src="notebook/figures/control_model_1.png" width="400"/>
 
 <img src="notebook/figures/control_model_2.png" width="400"/>
 
 <img src="notebook/figures/control_model_3.png" width="400"/>
 
-## Example 1: laser PDH lock 
+#### Example 1: laser PDH lock 
 The left plot shows the frequency noise performance in a laser stabilization setup, where 
-the free-running laser (blue trace) is frequency locked to an optical cavity. <br>
+the free-running laser (blue trace) is frequency locked to an optical cavity.
 
  - The left-side plot demonstrates (1) the locking bandwidth is about 1 MHz, (2) within the loop bandwidth 
 the laser tracks the optical cavity and thus the laser noise is limited by the cavity's
@@ -32,4 +49,9 @@ the photodetector (PD) or frequency noise discriminator, the servo and the laser
 
 <img src="notebook/figures/laser_pdh_lock.png" width="300"/> <img src="notebook/figures/laser_pdh_lock_inloop.png" width="300"/>
 
-## Example 2: Phase lock loop 
+#### Example 2: Phase lock loop 
+The plot below shows the phase noise performance of a Mini-Circuit ZOS50+ VCO locked to an LO.
+
+<img src="notebook/figures/VCO_PLL_lock.png" width="300"/>
+
+
