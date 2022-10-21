@@ -17,9 +17,7 @@ Behunin, Ryan O., et al. "Fundamental noise dynamics in cascaded-order Brillouin
 Physical Review A 98.2 (2018): 023832.
 
 - Laser rate equations for SBS cascaded emission
-$$
-\frac{da_m}{dt} = (i\Delta\omega - \gamma/2 + \mu(|a_{m-1}|^2 - |a_{m+1}|^2))a_m + \delta_{m0}i\sqrt(\gamma_{ex})F
-$$
+$$\frac{da_m}{dt} = (i\Delta\omega - \gamma/2 + \mu(|a_{m-1}|^2 - |a_{m+1}|^2))a_m + \delta_{m0}i\sqrt(\gamma_{ex})F$$
  - Laser metrics calculation: cavity Q, threshold $P_{th}$, efficiency $\eta$, minimum ST linewidth $\nu_{ST}$
 $$P_{th} = \frac{h\nu\gamma^3}{8\mu\gamma_{ex}} $$
 $$\eta_{S1} = (\frac{\gamma_{ex}}{\gamma})^2$$
