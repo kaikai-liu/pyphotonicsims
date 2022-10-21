@@ -109,7 +109,6 @@ class SBSLaser(LaserConst):
 
         return mu, vST_min, P_th, GB, gB, rho
 
-
     def pump_detuning_sweep(self, Px, dfx, abs_heating):
         """
         Input a list of pump power values
@@ -218,7 +217,7 @@ class SBSLaser(LaserConst):
         plt.ylabel(r'\nu_{ST}' + ' (Hz)')
         #plt.legend(tuple(legends[1:-2]))
 
-    def detuning_sweep_visulization(self, dfx, P, abs_heating = [6.0, 0.05]):
+    def detuning_sweep_visulization(self, dfx, P, abs_heating = [1.0, 0.05]):
         """
         Visualization of the detuning sweep with an array of detuning in [MHz]
 
@@ -250,20 +249,95 @@ class SBSLaser(LaserConst):
     def freqresp_current_mod(self, P_drive, freq1 = 1e3, freq2 = 1e10, freq_points = 1000):
         pass
 
-    def sbs_freq_matching(self, f_bt_S1_pump, Vac, wl1, wl2):
-        pass
+    def get_ng_from_sbs_freq_matching(self, f_bt_pump_S1 = 10.900e9, wl_match = 1550e-9):
+        """
+        calculate accurate ng and Vac from measured pump-S1 beatnote frequency
+        Args:
+            f_bt_pump_S1: measured pump-S1 beatnote frequency
+            wl_match: minimum SBS laser threshold wavelength
+
+        Returns:
+
+        """
+        FSR = self.c/(self.ng * self.L)
+        m = round(f_bt_pump_S1 / FSR)
+        ng = m * self.c / self.L / f_bt_pump_S1
+        Vac = f_bt_pump_S1 * wl_match / (2 * np.pi * ng)
+        return ng, Vac
+
+    def sbs_freq_matching_plot(self, ng = 1.5, Vac = 1808., wl_match = 1550e-9, wl1 = 1550e-9, wl2 = 1600e-9, m_plus = 0, ifinterp = False, df1 = np.array([-10, 10]), GB1 = np.array([1., 1.])):
+        """
+        Show plots of SBS phase/frequency matching
+        Args:
+            ng: calculated from get_ng_from_sbs_freq_matching()
+            Vac: calculated from get_ng_from_sbs_freq_matching()
+            wl_match: wavelength where SBS frequency matching is satisfied
+            wl1: plot wavelength range start
+            wl2: plot wavelength range stop
+            m_plus: how many resonance modes involved in SBS laser
+            ifinterp: wheather or not to interpolate from similated gain spectrum
+            df1: simulated GB spectrum data, in [MHz]
+            GB1: simulated GB spectrum data, in [1]
+
+        Returns:
+
+        """
+        # calculate OmgB, GB, P_th for other wavelengths [wl1, wl2]
+        FSR = self.c / (self.ng * self.L)
+        m = round(2 * np.pi * Vac * ng / wl_match / FSR)
+        wlx = np.linspace(wl1, wl2, 200)
+        OmgBx = 2 * np.pi * Vac * ng / wlx
+        mlist = np.array([[m]]) if m_plus == 0 else np.linspace(m - m_plus, m + m_plus, 2 * m_plus + 1).reshape((2 * m_plus + 1, 1))
+        mFSRx = mlist * self.c / (ng * self.L) * np.ones((1, len(wlx))) if m_plus else m * self.c / (ng * self.L) * np.ones((1, len(wlx)))
+
+        GBx = self.GB*GB_spectrum_silica((mFSRx - OmgBx) * 1e-6, ifinterp = ifinterp, df1 = df1, GB1 = GB1)
+        mu, vST_min, P_th, _, _, _ = self.calc_from_GB(GBx, self.L, self.gamma_in, self.gamma_ex, self.Aeff)
+
+        plt.figure()
+        plt.plot(wlx * 1e9, OmgBx * 1e-9)
+        plt.plot(wlx * 1e9, mFSRx.T * 1e-9)
+        plt.fill_between(wlx * 1e9, OmgBx*1e-9 - 0.05, OmgBx*1e-9 + 2 * 0.05, alpha = 0.3)
+        plt.xlabel(r'$\lambda$' + ' (nm)')
+        plt.ylabel('SBS shift (GHz)')
+        plt.legend(('SBS shift', 'mFSRx'))
+        plt.title(r'$n_g$' + ' %.5f, ' % ng + r'$\Omega_B$' + '@1550nm %.4f GHz' % (OmgBx[0]*1e-9))
+
+        plt.figure(figsize = (7, 4))
+        plt.subplot(121)
+        plt.plot(wlx * 1e9, GBx.T)
+        plt.xlabel(r'$\lambda$' + ' (nm)')
+        plt.ylabel('G' + r'$_B$' + ' (1/m W)')
+        plt.subplot(122)
+        plt.plot(wlx * 1e9, P_th.T*1e3)
+        plt.xlabel(r'$\lambda$' + ' (nm)')
+        plt.ylabel('P' + r'$_{th}$' + ' (mW)')
+        plt.ylim((0, 1e4*np.min(P_th)))
 
 
-def GB_spectrum_silica(df_B, BW1 = 50., BW2 = 100., ifinterp = False, df1 = np.array([-10, 10]), GB1 = np.array([1., 1.])):
+def GB_spectrum_silica(df_B, BW = 150., ifinterp = False, df1 = np.array([-10, 10]), GB1 = np.array([1., 1.])):
+    """
+    Calculate Brillouin gain at a frequency offset from Brillouin frequency shift (~10.9 GHz)
+    Args:
+        df_B: frequency offset from Brillouin frequency shift (~10.9 GHz), mFSR - Omg_B, in [MHz]
+        BW: Brillouin gain bandwidth ~150 MHz in [MHz]
+        ifinterp: wheather or not to interpolate from similated gain spectrum
+        df1: simulated GB spectrum data, in [MHz]
+        GB1: simulated GB spectrum data, in [1]
 
-    GB = np.zeros(len(df_B))
+    Returns:
+        GB
+
+    """
+    BW = BW/3
     if ifinterp:
-        ind = np.logical_and(df_B > min(df1), df_B < max(df1))
-        GB1 = GB1/max(GB1)
+        GB1 = GB1 / max(GB1)
+        ind = np.logical_and(df_B > min(df1), df_B < max(df1))  # index for those within the interpolation range
+        df_B = np.where(ind, df_B, min(df1))
         ft = interp1d(df1, GB1)
-        GB[ind] = ft(df_B[ind])
+        GB = np.where(ind, ft(df_B), 0)                         # set to 0 outside the interpolation range
     else:
-        GB = np.hstack((1/(1 + (df_B[df_B < 0]/BW1)**2), 1/(1 + (df_B[df_B > 0]/BW2)**2)))
+        # Asymmetric gain profile
+        GB = np.where(df_B < 0, 1/(1 + (df_B/BW)**2), 1/(1 + (df_B/(BW*2))**2))
 
     return GB
 
