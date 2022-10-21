@@ -7,7 +7,8 @@ Behunin, Ryan O., et al. "Fundamental noise dynamics in cascaded-order Brillouin
 from .semiconductor_laser import LaserConst
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.integrate import solve_ivp, ode
+from scipy.integrate import solve_ivp
+from scipy.interpolate import interp1d
 
 class SBSLaser(LaserConst):
     """
@@ -30,7 +31,7 @@ class SBSLaser(LaserConst):
         self.gamma_ex = 2 * np.pi * self.r[1] * 1e6
         self.gamma = self.gamma_in + self.gamma_ex
         self.Q = 2 * np.pi * self.f0 / self.gamma
-        self.mu, self.GB, self.gB, self.rho, self.P_th = self.threshold_calc_from_vST(self.vST_min)
+        self.mu, self.vST_min, self.P_th, self.GB, self.gB, self.rho = self.calc_from_vST(self.vST_min, self.L, self.gamma_in, self.gamma_ex, self.Aeff)
 
         if ifprint:
             print('-----------------REPORT------------------')
@@ -41,42 +42,72 @@ class SBSLaser(LaserConst):
             print('rho:           %.3f' % (self.rho))
             print('GB:            %.3f' % (self.GB))
 
-    def threshold_calc_from_vST(self, vST_min = 0.3):
+    def calc_from_vST(self, vST_min, L, gamma_in, gamma_ex, Aeff):
         """
         Calculate SBS laser metrics such as from minimum ST linewidth
         Args:
             vST_min: minimum ST/fundamental/intrinsic linewidth at S1 clamping point
+            L:
+            gamma_in:
+            gamma_ex:
+            Aeff:
+
         Returns:
 
         """
 
-        self.vST_min = vST_min
         mu = vST_min*2*np.pi/self.n0
-        GB = 2 * mu * self.L / (self.h * self.f0 * self.vg**2)
-        gB = GB * self.Aeff
+        GB = 2 * mu * L / (self.h * self.f0 * self.vg**2)
+        gB = GB * Aeff
         rho = gB/self.gB0
-        P_th = self.h * self.f0 * self.gamma**3 / (8 * mu * self.gamma_ex)
+        P_th = self.h * self.f0 * (gamma_in + gamma_ex)**3 / (8 * mu * gamma_ex)
 
-        return mu, GB, gB, rho, P_th
+        return mu, vST_min, P_th, GB, gB, rho
 
-    def threshold_calc_from_GB(self, GB):
+    def calc_from_GB(self, GB, L, gamma_in, gamma_ex, Aeff):
         """
         Calculate SBS laser metrics such as from Brillouin gain
         Args:
             GB:
+            L:
+            gamma_in:
+            gamma_ex:
+            Aeff:
 
         Returns:
 
         """
 
-        mu = GB * (self.h * self.f0 * self.vg ** 2) / (2 * self.L)
+        mu = GB * (self.h * self.f0 * self.vg ** 2) / (2 * L)
         vST_min = mu * self.n0 / (2 * np.pi)
-        gB = GB * self.Aeff
+        P_th = self.h * self.f0 * (gamma_in + gamma_ex) ** 3 / (8 * mu * gamma_ex)
+        gB = GB * Aeff
         rho = gB / self.gB0
-        P_th = self.h * self.f0 * self.gamma ** 3 / (8 * mu * self.gamma_ex)
 
-        return vST_min, mu, gB, rho, P_th
+        return mu, vST_min, P_th, GB, gB, rho
 
+    def calc_from_P_th(self, P_th, L, gamma_in, gamma_ex, Aeff):
+        """
+        Calculate SBS laser metrics such as from P_th
+        Args:
+            P_th: SBS S1 threshold
+            L:
+            gamma_in:
+            gamma_ex:
+            Aeff:
+
+        Returns:
+
+        """
+
+        mu = self.h * self.f0 * (gamma_in + gamma_ex) ** 3 / (8 * P_th * gamma_ex)
+        GB = 2 * mu * L / (self.h * self.f0 * self.vg ** 2)
+        vST_min = mu * self.n0 / (2 * np.pi)
+        gB = GB * Aeff
+        rho = gB / self.gB0
+
+
+        return mu, vST_min, P_th, GB, gB, rho
 
 
     def pump_detuning_sweep(self, Px, dfx, abs_heating):
@@ -219,16 +250,22 @@ class SBSLaser(LaserConst):
     def freqresp_current_mod(self, P_drive, freq1 = 1e3, freq2 = 1e10, freq_points = 1000):
         pass
 
-    def sbs_freq_matching(self, f_bt_S1_pump, Vac):
-        """
+    def sbs_freq_matching(self, f_bt_S1_pump, Vac, wl1, wl2):
+        pass
 
-        Args:
-            f_bt_S1_pump:
-            Vac:
 
-        Returns:
+def GB_spectrum_silica(df_B, BW1 = 50., BW2 = 100., ifinterp = False, df1 = np.array([-10, 10]), GB1 = np.array([1., 1.])):
 
-        """
+    GB = np.zeros(len(df_B))
+    if ifinterp:
+        ind = np.logical_and(df_B > min(df1), df_B < max(df1))
+        GB1 = GB1/max(GB1)
+        ft = interp1d(df1, GB1)
+        GB[ind] = ft(df_B[ind])
+    else:
+        GB = np.hstack((1/(1 + (df_B[df_B < 0]/BW1)**2), 1/(1 + (df_B[df_B > 0]/BW2)**2)))
+
+    return GB
 
 def req_sbs_laser(t, a, F_pump, df, abs_heating, sbs):
     """

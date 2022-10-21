@@ -12,11 +12,11 @@ make install
 ```
 
 ## Control loop noise model
-<img src="figures/control_model_1.png" width="400"/>
+<img src="notebook/figures/control_model_1.png" width="400"/>
 
-<img src="figures/control_model_2.png" width="400"/>
+<img src="notebook/figures/control_model_2.png" width="400"/>
 
-<img src="figures/control_model_3.png" width="400"/>
+<img src="notebook/figures/control_model_3.png" width="400"/>
 
 ## Example 1: laser PDH lock 
 The left plot shows the frequency noise performance in a laser stabilization setup, where 
@@ -30,6 +30,6 @@ noise and the photodetector (PD) noise.
  - The right-side plot takes a closer look at the in-loop noise contribution from all blocks of the lock loop, such as
 the photodetector (PD) or frequency noise discriminator, the servo and the laser.
 
-<img src="notebook/laser_pdh_lock.png" width="300"/> <img src="notebook/laser_pdh_lock_inloop.png" width="300"/>
+<img src="notebook/figures/laser_pdh_lock.png" width="300"/> <img src="notebook/figures/laser_pdh_lock_inloop.png" width="300"/>
 
 ## Example 2: Phase lock loop 
