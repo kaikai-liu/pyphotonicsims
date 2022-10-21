@@ -26,6 +26,7 @@ $$P_{th} = \frac{h\nu\gamma^3}{8\mu\gamma_{ex}} $$
 $$\eta_{S1} = (\frac{\gamma_{ex}}{\gamma})^2$$
 $$\nu_{ST,min} = \frac{n_0\gamma}{2\pi}$$
 
+
 <p align="center">
 <img src="notebook/figures/sbs_laser_pump_sweep.png" width="600"/>
 </p>
