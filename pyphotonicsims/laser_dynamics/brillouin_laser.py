@@ -265,7 +265,7 @@ class SBSLaser(LaserConst):
         Vac = f_bt_pump_S1 * wl_match / (2 * np.pi * ng)
         return ng, Vac
 
-    def sbs_freq_matching_plot(self, ng = 1.5, Vac = 1808., wl_match = 1550e-9, wl1 = 1550e-9, wl2 = 1600e-9, m_plus = 0, ifinterp = False, df1 = np.array([-10, 10]), GB1 = np.array([1., 1.])):
+    def sbs_freq_matching_plot(self, ng = 1.5, Vac = 1808., wl_match = 1550e-9, wl1 = 1550e-9, wl2 = 1600e-9, m_plus = 0, threshold_plot = True, ifinterp = False, df1 = np.array([-10, 10]), GB1 = np.array([1., 1.])):
         """
         Show plots of SBS phase/frequency matching
         Args:
@@ -294,24 +294,25 @@ class SBSLaser(LaserConst):
         mu, vST_min, P_th, _, _, _ = self.calc_from_GB(GBx, self.L, self.gamma_in, self.gamma_ex, self.Aeff)
 
         plt.figure()
-        plt.plot(wlx * 1e9, OmgBx * 1e-9)
-        plt.plot(wlx * 1e9, mFSRx.T * 1e-9)
+        plt.plot(wlx * 1e9, OmgBx * 1e-9, label = 'SBS shift')
+        plt.plot(wlx * 1e9, mFSRx.T * 1e-9, label = 'mFSRx')
         plt.fill_between(wlx * 1e9, OmgBx*1e-9 - 0.05, OmgBx*1e-9 + 2 * 0.05, alpha = 0.3)
         plt.xlabel(r'$\lambda$' + ' (nm)')
         plt.ylabel('SBS shift (GHz)')
-        plt.legend(('SBS shift', 'mFSRx'))
+        plt.legend()
         plt.title(r'$n_g$' + ' %.5f, ' % ng + r'$\Omega_B$' + '@1550nm %.4f GHz' % (OmgBx[0]*1e-9))
+        if threshold_plot:
+            plt.figure(figsize = (8, 3))
+            plt.subplot(121)
+            plt.plot(wlx * 1e9, GBx.T)
+            plt.xlabel(r'$\lambda$' + ' (nm)')
+            plt.ylabel('G' + r'$_B$' + ' (1/m W)')
+            plt.subplot(122)
+            plt.plot(wlx * 1e9, P_th.T*1e3)
+            plt.xlabel(r'$\lambda$' + ' (nm)')
+            plt.ylabel('P' + r'$_{th}$' + ' (mW)')
+            plt.ylim((0, 1e4*np.min(P_th)))
 
-        plt.figure(figsize = (8, 3))
-        plt.subplot(121)
-        plt.plot(wlx * 1e9, GBx.T)
-        plt.xlabel(r'$\lambda$' + ' (nm)')
-        plt.ylabel('G' + r'$_B$' + ' (1/m W)')
-        plt.subplot(122)
-        plt.plot(wlx * 1e9, P_th.T*1e3)
-        plt.xlabel(r'$\lambda$' + ' (nm)')
-        plt.ylabel('P' + r'$_{th}$' + ' (mW)')
-        plt.ylim((0, 1e4*np.min(P_th)))
 
 
 def GB_spectrum_silica(df_B, BW = 150., ifinterp = False, df1 = np.array([-10, 10]), GB1 = np.array([1., 1.])):
