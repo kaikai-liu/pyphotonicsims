@@ -15,9 +15,11 @@ def FAddThru(dw, r_in, r_ex):
         F: cavity response
 
     """
-    F = (1j * dw + (r_in - r_ex) / 2) / (1j * dw + (r_in + r_ex) / 2)
+    r = r_in + r_ex
+    F = (1j * dw + (r_in - r_ex) / 2) / (1j * dw + r / 2)
+    D = np.sqrt(r_in * r_ex) / (1j * dw + r / 2)
 
-    return F
+    return F, D
 
 
 def FAddThruDrop(dw, r_in, r_thru, r_drop):
@@ -35,9 +37,11 @@ def FAddThruDrop(dw, r_in, r_thru, r_drop):
         F2: cavity drop response
 
     """
-    F1 = (1j * dw + (r_in + r_drop - r_thru) / 2) / (1j * dw + (r_in + r_drop + r_thru) / 2)
-    F2 = np.sqrt(r_drop * r_thru) / (1j * dw + (r_in + r_drop + r_thru) / 2)
-    return F1, F2
+    r = r_in + r_thru + r_drop
+    F1 = (1j * dw + (r_in + r_drop - r_thru) / 2) / (1j * dw + r / 2)
+    F2 = np.sqrt(r_drop * r_thru) / (1j * dw + r / 2)
+    D = np.sqrt(r_in * r_thru) / (1j * dw + r / 2)
+    return F1, F2, D
 
 def FAddThruSplit(dw, r_in, r_ex, g):
     """
@@ -55,9 +59,12 @@ def FAddThruSplit(dw, r_in, r_ex, g):
         F: cavity response
 
     """
-    F = 1 - r_ex * (1j * dw + (r_in + r_ex) / 2) / ((1j * dw + (r_in + r_ex) / 2)**2 + g**2)
+    r = r_in + r_ex
+    F1 = 1 - r_ex * (1j * dw + r / 2) / ((1j * dw + r / 2)**2 + g**2)
+    F2 = g * r_ex / ((1j * dw + r / 2)**2 + g**2)
+    D = np.sqrt(r_in * r_ex * (dw**2 + (r/2)**2 + g**2)) / ((1j * dw + r / 2)**2 + g**2)
 
-    return F
+    return F1, F2, D
 
 
 def FAddThruFano(dw, r_in, r_ex, phi):
@@ -116,7 +123,7 @@ def directional_coupler(dn, Lc, wl = 1550e-9):
     Returns:
 
     """
-    ka = np.sin(np.pi * dn * Lx / wl)
+    ka = np.sin(np.pi * dn * Lc / wl)
     ka2 = ka**2
     return ka2
 
