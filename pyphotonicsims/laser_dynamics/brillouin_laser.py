@@ -15,8 +15,8 @@ class SBSLaser(LaserConst):
     SBS laser model
 
     """
-    def __init__(self, ord = 4, r = [1.0, 1.0], L = 0.07, vST_min = 0.5, Aeff = 30e-12, ifprint = True):
-        super().__init__()
+    def __init__(self, lmbd = 1.55e-6, ord = 4, r = [1.0, 1.0], L = 0.07, vST_min = 0.5, Aeff = 30e-12, ifprint = True):
+        super().__init__(lmbd = lmbd)
         self.ord = ord              # cascading order
         self.n0 = 26/0.045          # phonon occupation number 1/(exp(hv/kT)-1) ~ kT(26meV)/hv(0.045meV)
         self.r = r                  # loss rates [r_in, r_ex] in [MHz]
