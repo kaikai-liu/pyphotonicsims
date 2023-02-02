@@ -18,11 +18,11 @@ class LaserConst:
     Define basic constants (such as speed of light c) and parameters (such as wavelength lambda)
     """
 
-    def __init__(self, lmda = 1.55e-6):
+    def __init__(self, lmbd = 1.55e-6):
         self.c = 2.998e8  # speed of light
         self.q = 1.6e-19  # electron charge
         self.h = 6.63e-34  # plank const
-        self.lmbd = lmda # wavelength
+        self.lmbd = lmbd # wavelength
         self.f0 = self.c / self.lmbd  # frequency
         self.nsp = 1  # spon em factor
         self.ccm = self.c * 100

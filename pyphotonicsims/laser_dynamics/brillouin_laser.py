@@ -109,7 +109,7 @@ class SBSLaser(LaserConst):
 
         return mu, vST_min, P_th, GB, gB, rho
 
-    def pump_detuning_sweep(self, Px, dfx, abs_heating):
+    def pump_detuning_sweep(self, Px, dfx = np.array([0.0]), abs_heating = [0.0, 0.0]):
         """
         Input a list of pump power values
         Solve the SBS laser rate equation using ode45 for each pump until steady state
@@ -184,7 +184,7 @@ class SBSLaser(LaserConst):
 
         """
 
-        Pout, ax, t, at = self.pump_detuning_sweep(Px, np.array([0.0]), [0., 0.])
+        Pout, ax, t, at = self.pump_detuning_sweep(Px)
 
         # legneds = ['Pump', 'S1', ..., 'S5', 'Disp', 'Total']
         legends = ['Pump']
