@@ -262,10 +262,12 @@ class SBSLaser(LaserConst):
         FSR = self.c/(self.ng * self.L)
         m = round(f_bt_pump_S1 / FSR)
         ng = m * self.c / self.L / f_bt_pump_S1
-        Vac = f_bt_pump_S1 * wl_match / (2 * np.pi * ng)
+        Vac = f_bt_pump_S1 * wl_match / (2 * ng)
+        print(f"ng = {ng:.4f}")
+        print(f"V_ac = {Vac:.1f} m/s")
         return ng, Vac
 
-    def sbs_freq_matching_plot(self, ng = 1.5, Vac = 1808., wl_match = 1550e-9, wl1 = 1550e-9, wl2 = 1600e-9, m_plus = 0, threshold_plot = True, ifinterp = False, df1 = np.array([-10, 10]), GB1 = np.array([1., 1.])):
+    def sbs_freq_matching_plot(self, ng = 1.5, Vac = 1808., wl_match = 1550e-9, wl1 = 1530e-9, wl2 = 1580e-9, m_plus = 0, threshold_plot = True, ifinterp = False, df1 = np.array([-10, 10]), GB1 = np.array([1., 1.])):
         """
         Show plots of SBS phase/frequency matching
         Args:
