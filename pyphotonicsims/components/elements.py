@@ -111,6 +111,47 @@ def S_MZI(dw, fsr, ka2, attn):
     S22 = t2 * A * np.exp(1j * phi) - ka2
 
     return S11, S12, S21, S22
+def S_di_coupler(ka2):
+    """
+    response of an MZI
+    Args:
+        ka2:
+
+    Returns:
+        S: 2 by 2 matrix
+
+    """
+    ka = np.sqrt(ka2)
+    tau = np.sqrt(1-ka2)
+    S = np.array([[tau, 1j * ka], [1j * ka, tau]])
+    return S
+
+def PDB_MZI_resonator(dw, r_in, r_ex, ka2_in, ka2_out, phi):
+    """
+    Balanced detection of two outputs of an MZI resonator
+    Args:
+        dw: detuning in [MHz]
+        r_in: intrinsic loss in [MHz]
+        r_ex: external loss in [MHz]
+        ka2_in: MZI coupler
+        ka2_out: MZI coupler
+        phi: MZI phase section
+
+    Returns:
+        y: balanced detection output
+
+    """
+    y = np.zeros(len(dw))
+    for ii, dw_ii in enumerate(dw):
+        F_cav, _ = FAddThru(dw_ii, r_in, r_ex)
+        S1 = S_di_coupler(ka2_in)
+        S2 = np.array([[F_cav, 0], [0, np.exp(1j*phi)]])
+        S3 = S_di_coupler(ka2_out)
+        F = np.matmul(np.matmul(S1, S2), S3)
+        F = np.matmul(F, np.array([[1], [0]]))
+        y[ii] = np.abs(F[0]) ** 2 - np.abs(F[1]) ** 2
+    return y
+
 
 def directional_coupler(dn, Lc, wl = 1550e-9):
     """
