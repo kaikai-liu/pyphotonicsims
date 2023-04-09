@@ -15,14 +15,14 @@ class SBSLaser(LaserConst):
     SBS laser model
 
     """
-    def __init__(self, lmbd = 1.55e-6, ord = 4, r = [1.0, 1.0], L = 0.07, vST_min = 0.5, Aeff = 30e-12, ifprint = True):
+    def __init__(self, lmbd = 1.55e-6, ord = 4, r = [1.0, 1.0], L = 0.07, vST_min = 0.5, Aeff = 30e-12, ng = 1.5, ifprint = True):
         super().__init__(lmbd = lmbd)
         self.ord = ord              # cascading order
         self.n0 = 26/0.045          # phonon occupation number 1/(exp(hv/kT)-1) ~ kT(26meV)/hv(0.045meV)
         self.r = r                  # loss rates [r_in, r_ex] in [MHz]
         self.L = L                  # cavity length
         self.Aeff = Aeff            # mode area
-        self.ng = 1.5               # group index
+        self.ng = ng               # group index
         self.gB0 = 4.5e-13  # bulk silica Brillouin gain 0.045 m / GW
         self.vST_min = vST_min
 
@@ -286,9 +286,9 @@ class SBSLaser(LaserConst):
         """
         # calculate OmgB, GB, P_th for other wavelengths [wl1, wl2]
         FSR = self.c / (self.ng * self.L)
-        m = round(2 * np.pi * Vac * ng / wl_match / FSR)
+        m = round(2 * ng * Vac / wl_match / FSR)
         wlx = np.linspace(wl1, wl2, 200)
-        OmgBx = 2 * np.pi * Vac * ng / wlx
+        OmgBx = 2 * ng * Vac / wlx
         mlist = np.array([[m]]) if m_plus == 0 else np.linspace(m - m_plus, m + m_plus, 2 * m_plus + 1).reshape((2 * m_plus + 1, 1))
         mFSRx = mlist * self.c / (ng * self.L) * np.ones((1, len(wlx))) if m_plus else m * self.c / (ng * self.L) * np.ones((1, len(wlx)))
 
@@ -297,12 +297,14 @@ class SBSLaser(LaserConst):
 
         plt.figure()
         plt.plot(wlx * 1e9, OmgBx * 1e-9, label = 'SBS shift')
-        plt.plot(wlx * 1e9, mFSRx.T * 1e-9, label = 'mFSRx')
+        # plt.plot(wlx * 1e9, mFSRx.T * 1e-9, label = 'mFSRx')
+        for ii in range(len(mlist)):
+            plt.plot(wlx * 1e9, mFSRx[ii, :] * 1e-9, label=f'{mlist[ii, 0]:.0f}'+r'$\times$FSR')
         plt.fill_between(wlx * 1e9, OmgBx*1e-9 - 0.05, OmgBx*1e-9 + 2 * 0.05, alpha = 0.3)
         plt.xlabel(r'$\lambda$' + ' (nm)')
         plt.ylabel('SBS shift (GHz)')
         plt.legend()
-        plt.title(r'$n_g$' + ' %.5f, ' % ng + r'$\Omega_B$' + '@1550nm %.4f GHz' % (OmgBx[0]*1e-9))
+        plt.title(r'$n_g$' + ' %.5f, ' % ng + r'$\Omega_B$' + '@1550nm = %.4f GHz' % (OmgBx[0]*1e-9))
         if threshold_plot:
             plt.figure(figsize = (8, 3))
             plt.subplot(121)
