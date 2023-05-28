@@ -141,6 +141,8 @@ def PDB_MZI_resonator(dw, r_in, r_ex, ka2_in, ka2_out, phi):
         y: balanced detection output
 
     """
+    y1 = np.zeros(len(dw))
+    y2 = np.zeros(len(dw))
     y = np.zeros(len(dw))
     for ii, dw_ii in enumerate(dw):
         F_cav, _ = FAddThru(dw_ii, r_in, r_ex)
@@ -149,8 +151,10 @@ def PDB_MZI_resonator(dw, r_in, r_ex, ka2_in, ka2_out, phi):
         S3 = S_di_coupler(ka2_out)
         F = np.matmul(np.matmul(S1, S2), S3)
         F = np.matmul(F, np.array([[1], [0]]))
-        y[ii] = np.abs(F[0]) ** 2 - np.abs(F[1]) ** 2
-    return y
+        y1[ii] = np.abs(F[1]) ** 2
+        y2[ii] = np.abs(F[0]) ** 2
+    y = y1 - y2
+    return y, y1, y2
 
 
 def directional_coupler(dn, Lc, wl = 1550e-9):
