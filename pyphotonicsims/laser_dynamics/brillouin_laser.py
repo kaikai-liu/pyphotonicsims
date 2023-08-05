@@ -173,10 +173,10 @@ class SBSLaser(LaserConst):
         Pout[0, :] = self.h * self.f0 * abs(1j * np.sqrt(self.gamma_ex) * ax[0, :] + Fx) ** 2
         Pdisp = self.h * self.f0 * sum(abs(ax)**2) * self.gamma_in
         Pout = np.vstack((Pout, Pdisp, sum(Pout) + Pdisp))
-        # vST need to be added
+        vST = self.n0 * (self.gamma + 4 * self.mu * abs(np.vstack((ax[2:, :], ax[0, :]*0)))**2) / (4 * np.pi * abs(ax[1:, :])**2)
 
 
-        return Pout, ax, t, at
+        return Pout, vST, ax, t, at
 
     def pump_sweep_visulization(self, Px):
         """
@@ -184,9 +184,9 @@ class SBSLaser(LaserConst):
 
         """
 
-        Pout, ax, t, at = self.pump_detuning_sweep(Px)
+        Pout, vST, ax, t, at  = self.pump_detuning_sweep(Px)
 
-        # legneds = ['Pump', 'S1', ..., 'S5', 'Disp', 'Total']
+        # legends = ['Pump', 'S1', ..., 'S5', 'Disp', 'Total']
         legends = ['Pump']
         for ii in range(self.ord):
             legends.append('S' + str(ii + 1))
@@ -212,10 +212,11 @@ class SBSLaser(LaserConst):
         plt.ylabel('Stokes power (mW)')
         plt.legend(tuple(legends[1:-2]))
         plt.subplot(224)
-        # plt.plot(Px * 1e3, vST.T)
+        plt.semilogy(Px * 1e3, vST.T)
+        plt.ylim((self.vST_min/10, 10))
         plt.xlabel('Pump (mW)')
         plt.ylabel(r'$\nu_{ST}$' + ' (Hz)')
-        #plt.legend(tuple(legends[1:-2]))
+        plt.legend(tuple(legends[1:-2]))
 
     def detuning_sweep_visulization(self, dfx, P, abs_heating = [1.0, 0.05]):
         """
@@ -232,7 +233,7 @@ class SBSLaser(LaserConst):
 
         """
 
-        Pout, ax, t, at = self.pump_detuning_sweep(np.array([P]), dfx, abs_heating)
+        Pout, vST, ax, t, at = self.pump_detuning_sweep(np.array([P]), dfx, abs_heating)
 
         # legneds = ['Pump', 'S1', ..., 'S5', 'Disp']
         legends = ['Pump']
