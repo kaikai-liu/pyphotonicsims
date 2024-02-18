@@ -123,6 +123,7 @@ class SBSLaser(LaserConst):
 
         Returns:
             Pout: power output at steady states, Pout = array([[Pump],[S1],...[Disp],[Total]])
+            vST: fundamental linewidth
             ax: photon mode output at steady states
             t: time sequence points from ode solver
             at: photon mode from ode solver
@@ -305,7 +306,7 @@ class SBSLaser(LaserConst):
         plt.xlabel(r'$\lambda$' + ' (nm)')
         plt.ylabel('SBS shift (GHz)')
         plt.legend()
-        plt.title(r'$n_g$' + ' %.5f, ' % ng + r'$\Omega_B$' + '@1550nm = %.4f GHz' % (OmgBx[0]*1e-9))
+        plt.title(r'$n_g$' + ' %.5f, ' % ng + r'$\Omega_B$' + '@1550nm = %.4f GHz' % (OmgBx[np.argmin(np.abs(wlx - 1550e-9))]*1e-9))
         if threshold_plot:
             plt.figure(figsize = (8, 3))
             plt.subplot(121)
