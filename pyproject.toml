@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyphotonicsims"
+version = "0.0.1"
+description = "Photonics simulation tools"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Kaikai Liu", email = "kaikailiu@ucsb.edu" }]
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.23.0",
+    "scipy",
+    "pandas",
+    "matplotlib",
+    "control>=0.9.2",
+]
+
+[project.urls]
+Repository = "https://github.com/kaikai-liu/pyPhotonicsSims"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "mypy",
+    "flake8",
+    "pylint",
+    "pre-commit",
+    "jupyter",
+    "ipykernel"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.pytest.ini_options]
+testpaths = ["test"]
+
+[tool.mypy]
+ignore_missing_imports = true

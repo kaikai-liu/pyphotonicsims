@@ -1,35 +1,28 @@
 
-install: 
-	pip install -r requirements.txt --upgrade
-	pip install -e .
-	pre-commit install
+install:
+	uv sync --extra dev
+	uv run pre-commit install
 
 test:
-	pytest
+	uv run pytest
 
 cov:
-	pytest --cov= pyphotonicsims
+	uv run pytest --cov=pyphotonicsims
 
 mypy:
-	mypy . --ignore-missing-imports
+	uv run mypy . --ignore-missing-imports
 
 lint:
-	flake8 
+	uv run flake8
 
 pylint:
-	pylint pyphotonicsims
-
-lintd2:
-	flake8 --select RST
+	uv run pylint pyphotonicsims
 
 lintd:
-	pydocstyle pyphotonicsims
+	uv run pydocstyle pyphotonicsims
 
 doc8:
-	doc8 docs/
+	uv run doc8 docs/
 
 update:
-	pur
-
-update2:
-	pre-commit autoupdate --bleeding-edge
+	uv lock --upgrade
